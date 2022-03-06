@@ -1,10 +1,11 @@
-import * as express from 'express';
-import * as dotenv from 'dotenv';
+
+const express = require('express')
+const dotenv = require('dotenv')
 
 const {sequelize} = require('../models');
 const morgan = require('morgan');
 dotenv.config();
-const app:express.Express = express();
+const app = express();
 
 const port = process.env.PORT;
 
@@ -14,7 +15,7 @@ sequelize.sync({force:false})
     .catch(()=>{console.log('에러')})
 
 
-app.get('/',(req:express.Request,res:express.Response)=>{
+app.get('/',(req,res)=>{
     console.log('서버 실행')
     res.send('hello world')
 })
