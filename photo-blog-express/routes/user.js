@@ -5,6 +5,26 @@ const UserRole = require('../models/userRole');
 User = require('../models/user');
 const router = Router();
 
+router.post('/', async (req, res) => {
+    try {
+        const {userId, password, name, tel, email} = req.body;
+        const isUserExist = await User.findOne({where: {userId}});
+        if (isUserExist) {
+            return res.status(400).send({message: '이미 존재하는 아이디 입니다.'})
+        }
+        const hash = await bcrypt.hash(password, 12);
+        const createUser = await User.create({
+            userId,
+            password: hash,
+            name, tel, email,
+            role: UserRole.NORMAIL
+        })
+
+        res.status(200).send('회원 가입을 완료했습니다!');
+    } catch (error) {
+        console.error(error);
+    }
+});
 //관리자 생성
 router.get('/admin', async (req, res) => {
     try {
