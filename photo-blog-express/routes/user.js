@@ -1,8 +1,8 @@
 const {Router} = require('express');
 const bcrypt = require('bcrypt');
 const UserRole = require('../models/userRole');
-
-User = require('../models/user');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 const router = Router();
 
 router.post('/', async (req, res) => {
@@ -10,17 +10,19 @@ router.post('/', async (req, res) => {
         const {userId, password, name, tel, email} = req.body;
         const isUserExist = await User.findOne({where: {userId}});
         if (isUserExist) {
-            return res.status(400).send({message: '이미 존재하는 아이디 입니다.'})
+            return res.status(400).send({message: '이미 존재하는 아이디 입니다.'});
         }
         const hash = await bcrypt.hash(password, 12);
         const createUser = await User.create({
             userId,
             password: hash,
-            name, tel, email,
-            role: UserRole.NORMAIL
-        })
+            name,
+            tel,
+            email,
+            role: UserRole.NORMAIL,
+        });
 
-        res.status(200).send('회원 가입을 완료했습니다!');
+        return res.status(200).send('회원 가입을 완료했습니다!');
     } catch (error) {
         console.error(error);
     }
@@ -60,6 +62,35 @@ router.get('/find', async (req, res) => {
     } catch (error) {
         console.error(error);
     }
+});
+router.post('/login', async (req, res) => {
+    const {userId, password} = req.body;
+    const user = await User.findOne({
+        attributes: ['userId', 'password', 'name'],
+        where: {userId},
+    });
+    if (user === null) {
+        return res
+            .status(400)
+            .send({message: '존재하지 않는 아이디 입니다. 다시 확인해 주세요'});
+    }
+    let passwordValidate = await bcrypt.compare(password, user.password);
+    if (!passwordValidate) {
+        return res.status(400).send({
+            message: '아이디와 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.',
+        });
+    }
+    const token = jwt.sign(
+        {
+            userId: user.userId,
+            name: user.name,
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: '1h',
+        }
+    );
+    res.status(200).send({token: token});
 });
 
 module.exports = router;
