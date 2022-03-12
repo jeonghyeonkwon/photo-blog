@@ -4,3 +4,4 @@ uploads
 coverage
 .env
 .idea/
+.DS_Store
