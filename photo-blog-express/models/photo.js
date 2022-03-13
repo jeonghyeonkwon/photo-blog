@@ -4,8 +4,8 @@ module.exports = class Photo extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        title: { type: Sequelize.STRING, allowNull: false },
-        content: { type: Sequelize.STRING, allowNull: false },
+        originalFileName: { type: Sequelize.STRING, allowNull: false },
+        filePath: { type: Sequelize.STRING, allowNull: false },
       },
       {
         sequelize,
@@ -21,7 +21,6 @@ module.exports = class Photo extends Sequelize.Model {
   }
 
   static associate(db) {
-    db.Photo.belongsTo(db.User, { foreignKey: 'user_pk', targetKey: 'id' });
-    db.Photo.belongsToMany(db.HashTag, { through: 'photoHashTag' });
+    db.Photo.belongsTo(db.Board, { foreignKey: 'photo_pk', targetKey: 'id' });
   }
 };

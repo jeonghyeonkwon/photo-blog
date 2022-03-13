@@ -1,7 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const userRouter = require('../routes/user');
-const photoRouter = require('../routes/photo');
+const photoRouter = require('../routes/board');
 const { sequelize } = require('../models');
 const morgan = require('morgan');
 dotenv.config();
@@ -22,7 +22,7 @@ sequelize
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/user', userRouter);
-app.use('/photo', photoRouter);
+app.use('/board', photoRouter);
 
 app.listen(port, () => {
   console.log(`http://localhost:${port}`);

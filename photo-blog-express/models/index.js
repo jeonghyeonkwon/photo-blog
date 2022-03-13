@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
 const User = require('./user');
-const Photo = require('./photo');
+const Board = require('./board');
 const HashTag = require('./hashtag');
-
+const Photo = require('./photo');
 const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
 const db = {};
@@ -17,14 +17,17 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 db.User = User;
-db.Photo = Photo;
+db.Board = Board;
 db.HashTag = HashTag;
-
+db.Photo = Photo;
 User.init(sequelize);
-Photo.init(sequelize);
+Board.init(sequelize);
 HashTag.init(sequelize);
+Photo.init(sequelize);
 
 User.associate(db);
-Photo.associate(db);
+Board.associate(db);
 HashTag.associate(db);
+Photo.associate(db);
+
 module.exports = db;

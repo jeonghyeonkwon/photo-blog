@@ -20,6 +20,6 @@ module.exports = class HashTag extends Sequelize.Model {
   }
 
   static associate(db) {
-    db.HashTag.belongsToMany(db.Photo, { through: 'photoHashTag' });
+    db.HashTag.belongsToMany(db.Board, { through: 'boardHashTag' });
   }
 };
