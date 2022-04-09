@@ -1,4 +1,5 @@
-const express = require('express');
+import express from 'express';
+
 const dotenv = require('dotenv');
 const userRouter = require('../routes/user');
 const photoRouter = require('../routes/board');
