@@ -1,22 +1,20 @@
-import {sequelize} from "../models";
-import Board from "../models/board";
-import HashTag from "../models/hashtag";
-import Photo from "../models/photo";
+import {sequelize} from '../models';
+import Board from '../models/board';
+import HashTag from '../models/hashtag';
+import Photo from '../models/photo';
 
-export const createBoard = async (req, res) => {
+export const createBoard = async (req, res, next) => {
     const transaction = await sequelize.transaction();
     try {
         console.log(req.files);
 
-        const {tags, title, content} = req.body;
-        console.log('tag', tags);
-        console.log('title', title);
-        console.log('content', content);
+        const {tags, title, subTitle, content} = req.body;
 
         //게시판 작성
         const board = await Board.create(
             {
                 title,
+                subTitle,
                 content,
             },
             {transaction}
@@ -33,7 +31,7 @@ export const createBoard = async (req, res) => {
                 await board.addHashTag(hashTag);
             }
         }
-        throw new Error('오류');
+
         for (const img of req.files) {
             const photo = await Photo.create(
                 {
@@ -46,9 +44,10 @@ export const createBoard = async (req, res) => {
         }
 
         await transaction.commit();
-        res.send('ok');
+        res.status(201).send('ok');
     } catch (err) {
         await transaction.rollback();
         console.error(err);
+        next('게시글 작성 중 오류가 발생했습니다. 다시 시도해 주세요.');
     }
-}
+};

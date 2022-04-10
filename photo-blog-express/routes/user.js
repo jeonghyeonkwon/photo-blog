@@ -1,3 +1,5 @@
+import {verifyToken} from './middleware';
+
 const {Router} = require('express');
 
 import {
@@ -17,5 +19,6 @@ router.get('/admin', createAdmin);
 router.get('/find', validateUserId);
 
 router.post('/login', userLogin);
+
 
 module.exports = router;
