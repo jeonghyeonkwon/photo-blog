@@ -1,8 +1,45 @@
 import jwt from 'jsonwebtoken';
+import moment from 'moment';
+import {pagenationObj, PagenationObject} from '../common/pagenationObject';
 
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const UserRole = require('../models/userRole');
+
+export const createTestUser = async (req, res, next) => {
+    let testObj = {
+        userId: '테스트 아이디',
+        password: '1234',
+        name: '테스트 이름',
+        tel: '010-1234-4321',
+        email: 'givejeong@naver.com',
+    };
+    try {
+        for (let i = 1; i <= 100; i++) {
+            const userId = testObj.userId + i;
+            const password = testObj.password;
+            const name = testObj.name + i;
+            const tel = testObj.tel;
+            const email = testObj.email;
+
+            const hash = await bcrypt.hash(password, 12);
+            const createUser = await User.create({
+                userId,
+                password: hash,
+                name,
+                tel,
+                email,
+                role: UserRole.NORMAIL,
+            });
+        }
+
+        return res.status(200).send('회원 가입을 완료했습니다!');
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+};
+
 export const createUser = async (req, res, next) => {
     try {
         const {userId, password, name, tel, email} = req.body;
@@ -43,7 +80,7 @@ export const createAdmin = async (req, res, next) => {
             email: 'givejeong2468@gmail.com',
             role: UserRole.ADMIN,
         });
-        return res.status(200).send(user);
+        return res.status(200).send({message: '관리자 계정을 생성했습니다.'});
     } catch (err) {
         console.error(err);
         next(err);
@@ -93,6 +130,37 @@ export const userLogin = async (req, res, next) => {
             }
         );
         res.status(200).send({token: token});
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+};
+
+export const userList = async (req, res, next) => {
+    try {
+        let page = req.query.page || 1;
+        let limit = 10;
+        let offset = 0 + (page - 1) * limit;
+
+        const userList = await User.findAndCountAll({
+            raw: true,
+            offset: offset,
+            limit: limit,
+            order: [['id', 'DESC']],
+            distinct: true,
+            attributes: ['userId', 'name', 'tel', 'email', 'role', 'createdAt'],
+            where: {role: UserRole.NORMAIL},
+        });
+        console.log(userList);
+        let pageObj = new PagenationObject(
+            page,
+            userList.count,
+            limit,
+            userList.rows,
+            'user'
+        );
+
+        return res.status(200).send(pageObj);
     } catch (err) {
         console.error(err);
         next(err);

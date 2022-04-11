@@ -26,7 +26,6 @@ app.use('/user', userRouter);
 app.use('/board', photoRouter);
 
 app.use((err, req, res, next) => {
-    console.log('asdklfnasdlf');
     console.log(err);
     return res.status(400).send({msg: err.message});
 });
