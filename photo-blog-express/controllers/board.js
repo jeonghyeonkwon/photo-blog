@@ -218,3 +218,41 @@ export const boardList = async (req, res, next) => {
         next('게시글 리스트 호출 중 문제가 발생했습니다. 다시 시도해 주세요.');
     }
 };
+
+export const boardDetail = async (req, res, next) => {
+    try {
+        const boardId = req.params.id;
+        const board = await Board.findOne({
+            raw: true,
+            attributes: ['id', 'title', 'subTitle', 'content'],
+            where: {
+                id: boardId,
+            },
+        });
+        console.log(board);
+        const photoList = await Photo.findAll({
+            raw: true,
+            attributes: ['filePath'],
+            where: {
+                board_pk: boardId,
+            },
+        });
+        const hashTagList = await sequelize.query(
+            'SELECT tags.title' +
+            ' FROM boardHashTag AS bht' +
+            ' JOIN hashtags AS tags' +
+            ' ON tags.id = bht.hash_tag_id' +
+            ' WHERE bht.board_id = :boardId',
+            {
+                replacements: {boardId: boardId},
+                type: QueryTypes.SELECT,
+            }
+        );
+        board.photoList = photoList;
+        board.hashTagList = hashTagList;
+        res.status(200).send(board);
+    } catch (err) {
+        console.error(err);
+        next('사진 불러오기에 실패했습니다. 다시 시도해 주세요.');
+    }
+};

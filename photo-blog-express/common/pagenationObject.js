@@ -22,7 +22,7 @@ export class PagenationObject {
                 subTitle: board.subTitle,
                 createdAt: moment(board.createdAt).format('YYYY년 MM월 DD일'),
             }));
-        } else if (type === 'index') {
+        } else {
             this.data = array;
         }
     }

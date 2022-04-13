@@ -12,6 +12,7 @@ import {
     createBoard,
     createTestBoard,
     mangeBoard,
+    boardDetail,
 } from '../controllers/board';
 
 const router = Router();
@@ -54,6 +55,8 @@ const upload = multer({
 //사진 리스트
 router.get('/', boardList);
 
+//사진 디테일
+router.get('/:id', boardDetail);
 //관리자 게시글 리스트
 router.get('/manage', mangeBoard);
 
