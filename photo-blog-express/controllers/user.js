@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import moment from 'moment';
-import {pagenationObj, PagenationObject} from '../common/pagenationObject';
+
+import {PagenationObject} from '../common/pagenationObject';
 
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
@@ -15,7 +15,7 @@ export const createTestUser = async (req, res, next) => {
         email: 'givejeong@naver.com',
     };
     try {
-        for (let i = 1; i <= 100; i++) {
+        for (let i = 1; i <= 64; i++) {
             const userId = testObj.userId + i;
             const password = testObj.password;
             const name = testObj.name + i;
@@ -29,7 +29,7 @@ export const createTestUser = async (req, res, next) => {
                 name,
                 tel,
                 email,
-                role: UserRole.NORMAIL,
+                role: UserRole.NORMAL,
             });
         }
 
@@ -54,7 +54,7 @@ export const createUser = async (req, res, next) => {
             name,
             tel,
             email,
-            role: UserRole.NORMAIL,
+            role: UserRole.NORMAL,
         });
 
         return res.status(200).send('회원 가입을 완료했습니다!');
@@ -148,8 +148,8 @@ export const userList = async (req, res, next) => {
             limit: limit,
             order: [['id', 'DESC']],
             distinct: true,
-            attributes: ['userId', 'name', 'tel', 'email', 'role', 'createdAt'],
-            where: {role: UserRole.NORMAIL},
+            attributes: ['id', 'userId', 'name', 'tel', 'email', 'role', 'createdAt'],
+            where: {role: UserRole.NORMAL},
         });
         console.log(userList);
         let pageObj = new PagenationObject(

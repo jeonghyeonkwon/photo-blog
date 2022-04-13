@@ -16,7 +16,7 @@ const router = Router();
 router.get('/test', createTestUser);
 
 //유저 리스트
-router.get('/', userList);
+router.get('/manage', userList);
 //유저 생성
 router.post('/', createUser);
 //관리자 생성

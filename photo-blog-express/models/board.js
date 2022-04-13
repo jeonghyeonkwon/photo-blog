@@ -23,7 +23,7 @@ module.exports = class Board extends Sequelize.Model {
 
     static associate(db) {
         db.Board.belongsTo(db.User, {foreignKey: 'user_pk', targetKey: 'id'});
-        db.Board.hasMany(db.Photo, {foreignKey: 'photo_pk', sourceKey: 'id'});
+        db.Board.hasMany(db.Photo, {foreignKey: 'board_pk', sourceKey: 'id'});
         db.Board.belongsToMany(db.HashTag, {through: 'boardHashTag'});
     }
 };
