@@ -1,0 +1,27 @@
+@charset "utf-8";
+
+.main_detail {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 10px;
+  .main_detail_main_title {
+    font-size: 30px;
+    margin-bottom: 15px;
+  }
+  .main_detail_sub_title {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  .main_detail_box {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 0;
+  }
+  .main_img_box {
+    width: 48%;
+  }
+  .main_desc_wrap {
+    width: 48%;
+  }
+}

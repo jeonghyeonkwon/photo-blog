@@ -1,0 +1,59 @@
+@charset "utf-8";
+
+.sign_form {
+  background: white;
+}
+.sign_list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.sign_list p {
+  font-weight: bold;
+}
+.sign_list_input_box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #707070;
+  border-radius: 20px;
+  padding: 5px 10px;
+  gap: 10px;
+}
+.sign_input {
+  border: none;
+  padding: 5px 10px;
+  font-size: 16px;
+}
+.sign_input::placeholder {
+  font-size: 14px;
+}
+.sign_input:focus{
+  outline: none;
+}
+.deli_btn {
+  box-shadow: 0 0 6px #9f9f9f69;
+  border-radius: 15px;
+  padding: 7px;
+  cursor: pointer;
+}
+.one_input,
+.one_input_box {
+  width: 100%;
+}
+.sign_btn_wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+.sign_btn_wrap div {
+  cursor: pointer;
+}
+.sign_title {
+  font-weight: bold;
+  font-size: 25px;
+}
