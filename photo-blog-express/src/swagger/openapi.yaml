@@ -1,0 +1,22 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Photo-Blog
+  description: Photo-Blog API 문서입니다
+  license:
+    name: MIT
+servers:
+  - description: dev server
+    url: http://localhost:8000
+
+paths:
+  $ref: "./paths/_index.yaml"
+components:
+  responses:
+    successResponse:
+      description: successful request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:

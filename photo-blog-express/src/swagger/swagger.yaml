@@ -1,0 +1,34 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Photo-Blog
+  description: Photo-Blog API 문서입니다
+  license:
+    name: MIT
+servers:
+  - description: dev server
+    url: 'http://localhost:8000'
+paths:
+  /user/test:
+    get:
+      parameters:
+        - in: query
+          name: end
+          schema:
+            type: integer
+          description: 2~9999까지 숫자를 넣으면 1~end까지 테스트 유저가 생성
+      tags:
+        - /user
+      summary: 테스트 유저 생성
+      responses:
+        '201':
+          description: OK
+components:
+  responses:
+    successResponse:
+      description: successful request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: null

@@ -1,0 +1,14 @@
+/user/test:
+  get:
+    parameters:
+      - in: query
+        name: end
+        schema:
+          type: integer
+        description: 2~9999까지 숫자를 넣으면 1~end까지 테스트 유저가 생성
+    tags:
+      - /user
+    summary: 테스트 유저 생성
+    responses:
+      "201":
+        description: OK
