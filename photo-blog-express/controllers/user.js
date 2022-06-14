@@ -42,7 +42,7 @@ export const createTestUser = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
     try {
-        const {userId, password, name, tel, email} = req.body;
+        const {userId, password, name, tel, em1ail} = req.body;
         const isUserExist = await User.findOne({where: {userId}});
         if (isUserExist) {
             throw new Error('이미 존재하는 아이디 입니다.');

@@ -249,7 +249,8 @@ export const boardDetail = async (req, res, next) => {
             }
         );
         board.photoList = photoList;
-        board.hashTagList = hashTagList;
+        board.hashTagList = hash
+        TagList;
         res.status(200).send(board);
     } catch (err) {
         console.error(err);
