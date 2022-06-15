@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 // import { PagenationObject } from "../common/pagenationObject";
 import User from "../models/user";
@@ -13,6 +13,9 @@ import { StatusCodes } from "http-status-codes";
 import { IUserLoginDto, IUserRegisterDto } from "../interfaces/IUser";
 
 import { check, validationResult } from "express-validator";
+import { PagenationGenric } from "../dtos/genric/pagenationGenric";
+import * as Sequelize from "sequelize";
+
 export const createTestUser = async (
   req: Request,
   res: Response,
@@ -27,7 +30,7 @@ export const createTestUser = async (
   };
   const transaction = await sequelize.transaction();
   try {
-    let end = Number(req.params.end);
+    let end = Number(req.query.end) || 2;
     if (end <= 1 || end > 9999) {
       throw Error("1~9999이하로 작성하세요");
     }
@@ -172,7 +175,7 @@ export const validateUserId = async (
   next: NextFunction
 ) => {
   try {
-    const { userId } = req.params;
+    const userId = req.query.userId! as string;
     if (userId === "") {
       throw new Error("아이디를 입력하세요.");
     }
@@ -212,7 +215,7 @@ export const userLogin = async (
       {
         uuid: user.uuid,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET!,
       {
         expiresIn: "1h",
       }
@@ -221,38 +224,56 @@ export const userLogin = async (
       .status(200)
       .send(new BasicResponseDto<any>(StatusCodes.OK, { token: token }));
   } catch (err) {
-    console.error(err);
     next(err);
   }
 };
 
-// export const userList = async (req, res, next) => {
-//   try {
-//     let page = req.query.page || 1;
-//     let limit = 10;
-//     let offset = 0 + (page - 1) * limit;
+export const userList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let page: number = Number(req.query.page) || 1;
+    let limit: number = Number(req.query.limit) || 10;
+    let name = req.query.name || "";
+    let offset = 0 + (page - 1) * limit;
+    let Op = Sequelize.Op;
+    const userList = await User.findAndCountAll({
+      raw: true,
+      offset: offset,
+      limit: limit,
+      order: [["createdAt", "DESC"]],
+      distinct: true,
+      attributes: [
+        "uuid",
+        "userId",
+        "name",
+        "tel",
+        "email",
+        "authRole",
+        "createdAt",
+      ],
+      where: {
+        authRole: AuthRoleEnum.BASIC,
+        name: {
+          [Op.like]: `%${name}%`,
+        },
+      },
+    });
+    console.log(userList);
+    let pageObj = new PagenationGenric(
+      page,
+      userList.count,
+      limit,
+      userList.rows,
+      "user"
+    );
 
-//     const userList = await User.findAndCountAll({
-//       raw: true,
-//       offset: offset,
-//       limit: limit,
-//       order: [["id", "DESC"]],
-//       distinct: true,
-//       attributes: ["id", "userId", "name", "tel", "email", "role", "createdAt"],
-//       where: { role: UserRole.NORMAL },
-//     });
-//     console.log(userList);
-//     let pageObj = new PagenationObject(
-//       page,
-//       userList.count,
-//       limit,
-//       userList.rows,
-//       "user"
-//     );
-
-//     return res.status(200).send(pageObj);
-//   } catch (err) {
-//     console.error(err);
-//     next(err);
-//   }
-// };
+    return res
+      .status(200)
+      .send(new BasicResponseDto<PagenationGenric>(StatusCodes.OK, pageObj));
+  } catch (err) {
+    next(err);
+  }
+};

@@ -5,9 +5,9 @@ import {
   createUser,
   createAdmin,
   validateUserId,
-  // userLogin,
+  userLogin,
   createTestUser,
-  // userList,
+  userList,
 } from "../controllers/user";
 
 const router = express.Router();
@@ -15,7 +15,7 @@ const router = express.Router();
 router.get("/test", createTestUser);
 
 // //유저 리스트
-// router.get("/manage", userList);
+router.get("/manage", userList);
 // //유저 생성
 router.post("/", createUser);
 // //관리자 생성
@@ -23,6 +23,6 @@ router.get("/admin", createAdmin);
 // //아이디 중복 체크
 router.get("/find", validateUserId);
 
-// router.post("/login", userLogin);
+router.post("/login", userLogin);
 
 export default router;
