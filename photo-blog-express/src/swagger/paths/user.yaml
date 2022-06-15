@@ -20,7 +20,7 @@
                 statusCode:
                   type: integer
                   description: 응답 상태 코드
-                  example: 200
+                  example: 201
                 data:
                   type: object
                   properties:
@@ -33,6 +33,24 @@
     tags:
       - /user
     summary: 관리자 계정 생성
+    responses:
+      "201":
+        description: 유저 생성 완료
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                statusCode:
+                  type: integer
+                  description: 응답 상태 코드
+                  example: 201
+                data:
+                  type: object
+                  properties:
+                    userId:
+                      type: string;
+                      example: userId
 /user:
   post:
     tags:

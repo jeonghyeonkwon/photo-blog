@@ -57,7 +57,7 @@ export const createTestUser = async (
     }
     await transaction.commit();
     return res
-      .status(200)
+      .status(201)
       .send(
         new BasicResponseDto<MessageGenric>(
           StatusCodes.CREATED,
@@ -159,7 +159,7 @@ export const createAdmin = async (
     );
     await transaction.commit();
     return res
-      .status(200)
+      .status(201)
       .send(
         new BasicResponseDto<any>(StatusCodes.CREATED, { userId: user.userId })
       );
