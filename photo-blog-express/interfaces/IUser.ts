@@ -5,3 +5,8 @@ export interface IUserRegisterDto {
   tel: string;
   email: string;
 }
+
+export interface IUserLoginDto {
+  userId: string;
+  password: string;
+}

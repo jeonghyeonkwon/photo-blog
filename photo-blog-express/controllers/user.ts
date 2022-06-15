@@ -1,4 +1,4 @@
-// import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 // import { PagenationObject } from "../common/pagenationObject";
 import User from "../models/user";
@@ -10,7 +10,7 @@ import { AuthRoleEnum } from "../enums/authEnum";
 import { BasicResponseDto } from "../dtos/basicResponseDto";
 import { MessageGenric } from "../dtos/genric/messageGenric";
 import { StatusCodes } from "http-status-codes";
-import { IUserRegisterDto } from "../interfaces/IUser";
+import { IUserLoginDto, IUserRegisterDto } from "../interfaces/IUser";
 
 import { check, validationResult } from "express-validator";
 export const createTestUser = async (
@@ -118,14 +118,11 @@ export const createUser = async (
       { transaction }
     );
     await transaction.commit();
-    return res
-      .status(201)
-      .send(
-        new BasicResponseDto(
-          StatusCodes.CREATED,
-          new MessageGenric(createUser.userId)
-        )
-      );
+    return res.status(201).send(
+      new BasicResponseDto<any>(StatusCodes.CREATED, {
+        userId: createUser.userId,
+      })
+    );
   } catch (err) {
     await transaction.rollback();
     next(err);
@@ -161,10 +158,7 @@ export const createAdmin = async (
     return res
       .status(200)
       .send(
-        new BasicResponseDto(
-          StatusCodes.CREATED,
-          new MessageGenric(user.userId)
-        )
+        new BasicResponseDto<any>(StatusCodes.CREATED, { userId: user.userId })
       );
   } catch (err) {
     await transaction.rollback();
@@ -179,6 +173,9 @@ export const validateUserId = async (
 ) => {
   try {
     const { userId } = req.params;
+    if (userId === "") {
+      throw new Error("아이디를 입력하세요.");
+    }
     const isUserExist = await User.findOne({ where: { userId } });
     if (isUserExist) {
       throw new Error("이미 존재하는 아이디 입니다.");
@@ -190,67 +187,72 @@ export const validateUserId = async (
   }
 };
 
-// export const userLogin = async (req, res, next) => {
-//     try {
-//         const {userId, password} = req.body;
-//         const user = await User.findOne({
-//             attributes: ['id', 'userId', 'password', 'name'],
-//             where: {userId},
-//         });
-//         if (user === null) {
-//             throw new Error('존재하지 않는 아이디 입니다. 다시 확인해 주세요');
-//         }
-//         let passwordValidate = await bcrypt.compare(password, user.password);
-//         if (!passwordValidate) {
-//             throw new Error(
-//                 '아이디와 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.'
-//             );
-//         }
-//         console.log(user);
-//         const token = jwt.sign(
-//             {
-//                 id: user.id,
-//                 name: user.name,
-//             },
-//             process.env.JWT_SECRET,
-//             {
-//                 expiresIn: '1h',
-//             }
-//         );
-//         res.status(200).send({token: token});
-//     } catch (err) {
-//         console.error(err);
-//         next(err);
-//     }
-// };
+export const userLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, password }: IUserLoginDto = req.body;
+    const user = await User.findOne({
+      attributes: ["id", "userId", "password", "name"],
+      where: { userId },
+    });
+    if (!user) {
+      throw new Error("존재하지 않는 아이디 입니다. 다시 확인해 주세요");
+    }
+    let passwordValidate = await bcrypt.compare(password, user.password);
+    if (!passwordValidate) {
+      throw new Error(
+        "아이디와 비밀번호가 일치하지 않습니다. 다시 확인해 주세요."
+      );
+    }
+    console.log(user);
+    const token = jwt.sign(
+      {
+        uuid: user.uuid,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res
+      .status(200)
+      .send(new BasicResponseDto<any>(StatusCodes.OK, { token: token }));
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
 
 // export const userList = async (req, res, next) => {
-//     try {
-//         let page = req.query.page || 1;
-//         let limit = 10;
-//         let offset = 0 + (page - 1) * limit;
+//   try {
+//     let page = req.query.page || 1;
+//     let limit = 10;
+//     let offset = 0 + (page - 1) * limit;
 
-//         const userList = await User.findAndCountAll({
-//             raw: true,
-//             offset: offset,
-//             limit: limit,
-//             order: [['id', 'DESC']],
-//             distinct: true,
-//             attributes: ['id', 'userId', 'name', 'tel', 'email', 'role', 'createdAt'],
-//             where: {role: UserRole.NORMAL},
-//         });
-//         console.log(userList);
-//         let pageObj = new PagenationObject(
-//             page,
-//             userList.count,
-//             limit,
-//             userList.rows,
-//             'user'
-//         );
+//     const userList = await User.findAndCountAll({
+//       raw: true,
+//       offset: offset,
+//       limit: limit,
+//       order: [["id", "DESC"]],
+//       distinct: true,
+//       attributes: ["id", "userId", "name", "tel", "email", "role", "createdAt"],
+//       where: { role: UserRole.NORMAL },
+//     });
+//     console.log(userList);
+//     let pageObj = new PagenationObject(
+//       page,
+//       userList.count,
+//       limit,
+//       userList.rows,
+//       "user"
+//     );
 
-//         return res.status(200).send(pageObj);
-//     } catch (err) {
-//         console.error(err);
-//         next(err);
-//     }
+//     return res.status(200).send(pageObj);
+//   } catch (err) {
+//     console.error(err);
+//     next(err);
+//   }
 // };

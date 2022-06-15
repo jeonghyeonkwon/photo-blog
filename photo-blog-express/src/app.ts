@@ -9,6 +9,9 @@ import * as YAML from "yamljs";
 import userRouter from "../routes/user";
 
 import boardRouter from "../routes/board";
+import { BasicResponseDto } from "../dtos/basicResponseDto";
+import { MessageGenric } from "../dtos/genric/messageGenric";
+import { StatusCodes } from "http-status-codes";
 
 const { sequelize } = require("../models");
 
@@ -59,7 +62,14 @@ app.use(
     next: express.NextFunction
   ) => {
     console.error(err);
-    return res.status(400).send({ msg: err.message });
+    return res
+      .status(400)
+      .send(
+        new BasicResponseDto<MessageGenric>(
+          StatusCodes.BAD_REQUEST,
+          err.message
+        )
+      );
   }
 );
 
