@@ -61,7 +61,7 @@ export const createTestUser = async (
       .send(
         new BasicResponseDto<MessageGenric>(
           StatusCodes.CREATED,
-          new MessageGenric("테스트 계정을 생성완료했습니다.")
+          new MessageGenric("테스트 계정을 생성 완료 했습니다.")
         )
       );
   } catch (err) {

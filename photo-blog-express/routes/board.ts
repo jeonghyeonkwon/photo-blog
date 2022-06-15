@@ -1,16 +1,16 @@
-import * as express from "express";
+// import * as express from "express";
 
-import path from "path";
-import multer from "multer";
-import fs from "fs";
-import // boardList,
-// createBoard,
-// createTestBoard,
-// mangeBoard,
-// boardDetail,
-"../controllers/board";
+// import path from "path";
+// import multer from "multer";
+// // import fs from "fs";
+// import // boardList,
+// // createBoard,
+// // createTestBoard,
+// // mangeBoard,
+// // boardDetail,
+// "../controllers/board";
 
-const router = express.Router();
+// const router = express.Router();
 
 // const filePath = path.join(
 //   __dirname,
@@ -61,4 +61,4 @@ const router = express.Router();
 // //게시글 작성
 // router.post("/upload", upload.array("image", 3), createBoard);
 
-export default router;
+// export default router;
