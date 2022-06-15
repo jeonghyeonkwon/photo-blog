@@ -10,6 +10,9 @@ import { AuthRoleEnum } from "../enums/authEnum";
 import { BasicResponseDto } from "../dtos/basicResponseDto";
 import { MessageGenric } from "../dtos/genric/messageGenric";
 import { StatusCodes } from "http-status-codes";
+import { IUserRegisterDto } from "../interfaces/IUser";
+
+import { check, validationResult } from "express-validator";
 export const createTestUser = async (
   req: Request,
   res: Response,
@@ -63,68 +66,129 @@ export const createTestUser = async (
     next(err);
   }
 };
+// var patternPhone = /01[016789]-[^0][0-9]{2,3}-[0-9]{3,4}/;
 
-// export const createUser = async (req, res, next) => {
-//     try {
-//         const {userId, password, name, tel, em1ail} = req.body;
-//         const isUserExist = await User.findOne({where: {userId}});
-//         if (isUserExist) {
-//             throw new Error('이미 존재하는 아이디 입니다.');
-//         }
-//         const hash = await bcrypt.hash(password, 12);
-//         const createUser = await User.create({
-//             userId,
-//             password: hash,
-//             name,
-//             tel,
-//             email,
-//             role: UserRole.NORMAL,
-//         });
+export const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  await check("userId", "아이디를 입력하세요").not().isEmpty().run(req);
+  await check("password", "비밀번호를 6자 이상 입력하세요")
+    .isLength({
+      min: 6,
+    })
+    .run(req);
+  await check("name", "이름을 입력하세요").not().isEmpty().run(req);
+  await check("tel")
+    .custom((value) => {
+      const patternPhone = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/;
+      if (!patternPhone.test(value)) {
+        throw new Error("전화번호 확인해 주세요");
+      }
+      return true;
+    })
+    .run(req);
+  check("email", "이메일을 다시 한번 확인해 주세요").isEmail().run(req);
 
-//         return res.status(200).send('회원 가입을 완료했습니다!');
-//     } catch (err) {
-//         console.error(err);
-//         next(err);
-//     }
-// };
+  const transaction = await sequelize.transaction();
+  try {
+    const errors = validationResult(req);
+    console.log(errors.array());
+    if (!errors.isEmpty()) {
+      throw res.status(400).json({ errors: errors.array() });
+    }
 
-// export const createAdmin = async (req, res, next) => {
-//     try {
-//         const adminId = process.env.ADMIN_ID;
-//         const isUserExist = await User.findOne({where: {userId: adminId}});
-//         if (isUserExist) {
-//             throw new Error('이미 존재하는 아이디 입니다.');
-//         }
-//         const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
-//         const user = await User.create({
-//             userId: adminId,
-//             password: hash,
-//             name: '관리자',
-//             tel: '010-1234-4321',
-//             email: 'givejeong2468@gmail.com',
-//             role: UserRole.ADMIN,
-//         });
-//         return res.status(200).send({message: '관리자 계정을 생성했습니다.'});
-//     } catch (err) {
-//         console.error(err);
-//         next(err);
-//     }
-// };
+    const { userId, password, name, tel, email }: IUserRegisterDto = req.body;
+    const isUserExist = await User.findOne({ where: { userId } });
+    if (isUserExist) {
+      throw new Error("이미 존재하는 아이디 입니다.");
+    }
+    const hash = await bcrypt.hash(password, 12);
+    const createUser = await User.create(
+      {
+        userId,
+        password: hash,
+        name,
+        uuid: v4(),
+        tel,
+        email,
+        authRole: AuthRoleEnum.BASIC,
+      },
+      { transaction }
+    );
+    await transaction.commit();
+    return res
+      .status(201)
+      .send(
+        new BasicResponseDto(
+          StatusCodes.CREATED,
+          new MessageGenric(createUser.userId)
+        )
+      );
+  } catch (err) {
+    await transaction.rollback();
+    next(err);
+  }
+};
 
-// export const validateUserId = async (req, res, next) => {
-//     try {
-//         const {userId} = req.body;
-//         const isUserExist = await User.findOne({where: {userId}});
-//         if (isUserExist) {
-//             throw new Error('이미 존재하는 아이디 입니다.');
-//         } else {
-//             return res.status(200).send({message: '이용 가능한 아이디 입니다'});
-//         }
-//     } catch (err) {
-//         console.error(err);
-//         next(err);
-//     }
-// };
+export const createAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const adminId = process.env.ADMIN_ID;
+    const isUserExist = await User.findOne({ where: { userId: adminId } });
+    if (isUserExist) {
+      throw new Error("이미 존재하는 아이디 입니다.");
+    }
+    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
+    const user = await User.create(
+      {
+        userId: adminId,
+        password: hash,
+        uuid: v4(),
+        name: process.env.ADMIN_NAME,
+        tel: process.env.ADMIN_TEL,
+        email: process.env.ADMIN_EMAIL,
+        authRole: AuthRoleEnum.ADMIN,
+      },
+      { transaction }
+    );
+    await transaction.commit();
+    return res
+      .status(200)
+      .send(
+        new BasicResponseDto(
+          StatusCodes.CREATED,
+          new MessageGenric(user.userId)
+        )
+      );
+  } catch (err) {
+    await transaction.rollback();
+    next(err);
+  }
+};
+
+export const validateUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const isUserExist = await User.findOne({ where: { userId } });
+    if (isUserExist) {
+      throw new Error("이미 존재하는 아이디 입니다.");
+    } else {
+      return res.status(200).send({ message: "이용 가능한 아이디 입니다" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 
 // export const userLogin = async (req, res, next) => {
 //     try {

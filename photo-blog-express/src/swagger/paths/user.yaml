@@ -11,4 +11,4 @@
     summary: 테스트 유저 생성
     responses:
       "201":
-        description: OK
+        description: 유저 생성 완료
