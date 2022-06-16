@@ -35,7 +35,7 @@
     summary: 관리자 계정 생성
     responses:
       "201":
-        description: 유저 생성 완료
+        description: 관리자 계정 생성 완료
         content:
           application/json:
             schema:
@@ -68,6 +68,24 @@
           type: string
         description: 사용 할 유저 아이디 입력
     summary: 아이디 중복 체크
+    responses:
+      "200":
+        description: 사용 가능한 아이디
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                statusCode:
+                  type: integer
+                  description: 응답 상태 코드
+                  example: 200
+                data:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: 이용 가능한 아이디 입니다
 
 /user/login:
   post:
@@ -80,7 +98,3 @@
     tags:
       - /user
     summery: 유저 리스트
-# // //유저 리스트
-# router.get("/manage", userList);
-
-# router.post("/login", userLogin);

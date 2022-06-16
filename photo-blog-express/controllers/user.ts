@@ -183,7 +183,14 @@ export const validateUserId = async (
     if (isUserExist) {
       throw new Error("이미 존재하는 아이디 입니다.");
     } else {
-      return res.status(200).send({ message: "이용 가능한 아이디 입니다" });
+      return res
+        .status(200)
+        .send(
+          new BasicResponseDto<MessageGenric>(
+            StatusCodes.OK,
+            new MessageGenric("이용 가능한 아이디 입니다")
+          )
+        );
     }
   } catch (err) {
     next(err);
@@ -273,6 +280,57 @@ export const userList = async (
     return res
       .status(200)
       .send(new BasicResponseDto<PagenationGenric>(StatusCodes.OK, pageObj));
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const decoded = req.decoded! as jwt.JwtPayload;
+  const uuid = req.params.uuid;
+
+  try {
+    if (decoded.uuid !== uuid) {
+      throw new Error("잘못된 요청 입니다. 확인 후 다시 시도해 주세요");
+    }
+    await User.destroy({
+      where: { uuid: uuid },
+    });
+    res
+      .status(204)
+      .send(
+        new BasicResponseDto<MessageGenric>(
+          StatusCodes.NO_CONTENT,
+          new MessageGenric("탈퇴를 완료했습니다.")
+        )
+      );
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resignUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {};
+
+export const validateToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const decoded = req.decoded! as jwt.JwtPayload;
+    res.status(200).send(
+      new BasicResponseDto<any>(StatusCodes.OK, {
+        uuid: decoded.id!,
+      })
+    );
   } catch (err) {
     next(err);
   }
