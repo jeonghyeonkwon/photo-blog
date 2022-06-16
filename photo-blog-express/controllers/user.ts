@@ -317,7 +317,30 @@ export const resignUser = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  const decoded = req.decoded! as jwt.JwtPayload;
+  const uuid = req.params.uuid;
+
+  try {
+    const admin = await User.findOne({ where: { uuid: decoded.uuid } });
+    if (!admin || admin.authRole !== AuthRoleEnum.ADMIN) {
+      throw new Error("관리자 정보가 일치하지 않습니다. 다시 시도해 주세요");
+    }
+    await User.destroy({
+      where: { uuid: uuid },
+    });
+    res
+      .status(204)
+      .send(
+        new BasicResponseDto<MessageGenric>(
+          StatusCodes.NO_CONTENT,
+          new MessageGenric("해당 유저를 탈퇴 완료 했습니다.")
+        )
+      );
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const validateToken = async (
   req: Request,
