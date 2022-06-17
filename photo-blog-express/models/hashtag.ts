@@ -1,4 +1,5 @@
-import { DataTypes, Model } from "sequelize";
+import { BelongsToManyAddAssociationsMixin, DataTypes, Model } from "sequelize";
+import Board from "./board";
 import { dbType } from "./index";
 import { sequelize } from "./sequelize";
 
@@ -6,6 +7,10 @@ class HashTag extends Model {
   public readonly id!: number;
   public title!: string;
   public uuid!: string;
+  public readonly createdAt!: Date;
+  public updatedAt!: Date;
+
+  public addBoards!: BelongsToManyAddAssociationsMixin<Board, string>;
 }
 HashTag.init(
   {
@@ -24,7 +29,7 @@ HashTag.init(
     timestamps: true,
     underscored: true,
     modelName: "HashTag",
-    tableName: "hash_tags",
+    tableName: "hashtags",
     paranoid: true,
     charset: "utf8",
     collate: "utf8_general_ci",
@@ -33,33 +38,8 @@ HashTag.init(
 export const associate = (db: dbType) => {
   db.HashTag.belongsToMany(db.Board, {
     through: "boardHashTag",
+    foreignKey: "hashtag_pk",
     sourceKey: "uuid",
-    foreignKey: "hash_tag_pk",
   });
 };
 export default HashTag;
-// const Sequelize = require('sequelize');
-
-// module.exports = class HashTag extends Sequelize.Model {
-//   static init(sequelize) {
-//     return super.init(
-//       {
-//         title: { type: Sequelize.STRING, allowNull: false },
-//       },
-//       {
-//         sequelize,
-//         timestamps: true,
-//         underscored: true,
-//         modelName: 'HashTag',
-//         tableName: 'hashtags',
-//         paranoid: true,
-//         charset: 'utf8',
-//         collate: 'utf8_general_ci',
-//       }
-//     );
-//   }
-
-//   static associate(db) {
-//     db.HashTag.belongsToMany(db.Board, { through: 'boardHashTag' });
-//   }
-// };

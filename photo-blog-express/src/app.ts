@@ -8,7 +8,7 @@ import * as YAML from "yamljs";
 
 import userRouter from "../routes/user";
 import adminRouter from "../routes/admin";
-// import boardRouter from "../routes/board";
+import boardRouter from "../routes/board";
 import { BasicResponseDto } from "../dtos/basicResponseDto";
 import { MessageGenric } from "../dtos/genric/messageGenric";
 import { StatusCodes } from "http-status-codes";
@@ -53,7 +53,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);
-// app.use("/board", boardRouter);
+app.use("/board", boardRouter);
 
 app.use(
   (

@@ -1,7 +1,10 @@
-// import { sequelize } from "../models";
-// import Board from "../models/board";
-// import HashTag from "../models/hashtag";
-// import Photo from "../models/photo";
+import { Express, NextFunction, Request, Response } from "express";
+import { v4 } from "uuid";
+import { IBoardCreateDto } from "../interfaces/IBoard";
+import { sequelize } from "../models";
+import Board from "../models/board";
+import HashTag from "../models/hashtag";
+import Photo from "../models/photo";
 // import { PagenationObject } from "../common/pagenationObject";
 // import { QueryTypes } from "sequelize";
 
@@ -72,57 +75,70 @@
 //   }
 //   res.status(201).send({ meg: "게시글 작성을 완료했습니다." });
 // };
-// export const createBoard = async (req, res, next) => {
-//   const transaction = await sequelize.transaction();
-//   try {
-//     console.log(req.body);
+export const createBoard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const transaction = await sequelize.transaction();
+  try {
+    console.log(req.body);
 
-//     const { tags, title, subTitle, content } = req.body;
+    const { title, subTitle, content, tags }: IBoardCreateDto = req.body;
 
-//     //게시판 작성
-//     const board = await Board.create(
-//       {
-//         title,
-//         subTitle,
-//         content,
-//       },
-//       { transaction }
-//     );
+    //게시판 작성
+    const board = await Board.create(
+      {
+        title: title,
+        subTitle: subTitle,
+        content: content,
+        uuid: v4(),
+      },
+      { transaction }
+    );
 
-//     for (const tag of tags) {
-//       const isExistTag = await HashTag.findOne(
-//         { where: { title: tag } },
-//         { transaction }
-//       );
+    if (tags) {
+      const promises = tags.map((title) =>
+        HashTag.findOrCreate({
+          where: { title: title },
+          defaults: { uuid: v4() },
+          transaction,
+        })
+      );
+      console.log(promises);
+      const result = await Promise.all(promises);
+      console.log(result);
+      await board.addHashTags(
+        result.map((tag) => tag[0]),
+        { transaction }
+      );
+    }
+    if (!req.files) {
+      throw new Error("이미지를 업로드 하세요.");
+    }
 
-//       if (isExistTag) {
-//         board.addHashTag(isExistTag);
-//       } else {
-//         const hashTag = await HashTag.create({ title: tag }, { transaction });
+    for (const img of req.files) {
+      console.log(`filename : ${img.filename}`);
+      console.log(`originalname : ${img.originalname}`);
+      const photo = await Photo.create(
+        {
+          originalFileName: img.filename,
+          filePath: img.path,
+          uuid: v4(),
+        },
+        { transaction }
+      );
+      await board.addPhoto(photo, { transaction });
+    }
 
-//         await board.addHashTag(hashTag, { transaction });
-//       }
-//     }
+    await transaction.commit();
+    res.status(201).send({ meg: "게시글 작성을 완료했습니다." });
+  } catch (err) {
+    await transaction.rollback();
 
-//     for (const img of req.files) {
-//       const photo = await Photo.create(
-//         {
-//           originalFileName: img.filename,
-//           filePath: img.path,
-//         },
-//         { transaction }
-//       );
-//       await board.addPhoto(photo, { transaction });
-//     }
-
-//     await transaction.commit();
-//     res.status(201).send({ meg: "게시글 작성을 완료했습니다." });
-//   } catch (err) {
-//     await transaction.rollback();
-//     console.error(err);
-//     next("게시글 작성 중 오류가 발생했습니다. 다시 시도해 주세요.");
-//   }
-// };
+    next(err);
+  }
+};
 
 // export const mangeBoard = async (req, res, next) => {
 //   try {

@@ -1,17 +1,14 @@
 import * as jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-// import { PagenationObject } from "../common/pagenationObject";
 import User from "../models/user";
 import { sequelize } from "../models";
 import { v4 } from "uuid";
 const bcrypt = require("bcrypt");
-// const UserRole = require("../models/userRole");
 import { AuthRoleEnum } from "../enums/authEnum";
 import { BasicResponseDto } from "../dtos/basicResponseDto";
 import { MessageGenric } from "../dtos/genric/messageGenric";
 import { StatusCodes } from "http-status-codes";
 import { IUserLoginDto, IUserRegisterDto } from "../interfaces/IUser";
-
 import { check, validationResult } from "express-validator";
 import { PagenationGenric } from "../dtos/genric/pagenationGenric";
 import * as Sequelize from "sequelize";

@@ -11,6 +11,8 @@ class User extends Model {
   public tel!: string;
   public email!: string;
   public readonly authRole!: AuthRoleEnum;
+  public readonly createdAt!: Date;
+  public updatedAt!: Date;
 }
 User.init(
   {

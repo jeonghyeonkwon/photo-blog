@@ -1,5 +1,13 @@
-import { DataTypes, Model } from "sequelize";
+import {
+  BelongsToManyAddAssociationMixin,
+  BelongsToManyAddAssociationsMixin,
+  DataTypes,
+  HasManyAddAssociationMixin,
+  Model,
+} from "sequelize";
+import HashTag from "./hashtag";
 import { dbType } from "./index";
+import Photo from "./photo";
 import { sequelize } from "./sequelize";
 class Board extends Model {
   public readonly id!: number;
@@ -9,6 +17,10 @@ class Board extends Model {
   public content!: string;
   public readonly createdAt!: Date;
   public updatedAt!: Date;
+
+  public addHashTag!: BelongsToManyAddAssociationMixin<HashTag, string>;
+  public addHashTags!: BelongsToManyAddAssociationsMixin<HashTag, string>;
+  public addPhoto!: HasManyAddAssociationMixin<Photo, string>;
 }
 Board.init(
   {
@@ -48,32 +60,7 @@ export const associate = (db: dbType) => {
     foreignKey: "board_pk",
     sourceKey: "uuid",
   });
+  db.Board.hasMany(db.Photo, { foreignKey: "board_pk", sourceKey: "uuid" });
 };
-export default Board;
-//     static associate(db) {
-//         db.Board.belongsTo(db.User, {foreignKey: 'user_pk', targetKey: 'id'});
-//         db.Board.hasMany(db.Photo, {foreignKey: 'board_pk', sourceKey: 'id'});
-//         db.Board.belongsToMany(db.HashTag, {through: 'boardHashTag'});
-//     }
-// module.exports = class Board extends Sequelize.Model {
-//     static init(sequelize) {
-//         return super.init(
-//             {
-//                 title: {type: Sequelize.STRING, allowNull: false},
-//                 subTitle: {type: Sequelize.STRING, allowNull: false},
-//                 content: {type: Sequelize.STRING, allowNull: false},
-//             },
-//             {
-//                 sequelize,
-//                 timestamps: true,
-//                 underscored: true,
-//                 modelName: 'Board',
-//                 tableName: 'boards',
-//                 paranoid: true,
-//                 charset: 'utf8',
-//                 collate: 'utf8_general_ci',
-//             }
-//         );
-//     }
 
-// };
+export default Board;
