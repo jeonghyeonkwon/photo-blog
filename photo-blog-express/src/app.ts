@@ -7,7 +7,7 @@ import * as swaggerUi from "swagger-ui-express";
 import * as YAML from "yamljs";
 
 import userRouter from "../routes/user";
-
+import adminRouter from "../routes/admin";
 // import boardRouter from "../routes/board";
 import { BasicResponseDto } from "../dtos/basicResponseDto";
 import { MessageGenric } from "../dtos/genric/messageGenric";
@@ -52,6 +52,7 @@ const swaggerSpec = YAML.load(path.join(__dirname, "/swagger/swagger.yaml"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/user", userRouter);
+app.use("/admin", adminRouter);
 // app.use("/board", boardRouter);
 
 app.use(
