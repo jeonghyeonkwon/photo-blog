@@ -28,7 +28,7 @@ export class PagenationGenric {
       }));
     } else if (type === "board") {
       this.userList = array.map((board) => ({
-        id: board.id,
+        id: board.uuid,
         title: board.title,
         subTitle: board.subTitle,
         createdAt: moment(board.createdAt).format("YYYY년 MM월 DD일"),

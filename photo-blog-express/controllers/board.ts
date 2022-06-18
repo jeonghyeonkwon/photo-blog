@@ -1,5 +1,9 @@
 import { Express, NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import { QueryTypes } from "sequelize/types";
 import { v4 } from "uuid";
+import { BasicResponseDto } from "../dtos/basicResponseDto";
+import { PagenationGenric } from "../dtos/genric/pagenationGenric";
 import { IBoardCreateDto } from "../interfaces/IBoard";
 import { sequelize } from "../models";
 import Board from "../models/board";
@@ -118,8 +122,6 @@ export const createBoard = async (
     }
 
     for (const img of req.files) {
-      console.log(`filename : ${img.filename}`);
-      console.log(`originalname : ${img.originalname}`);
       const photo = await Photo.create(
         {
           originalFileName: img.filename,
@@ -132,7 +134,12 @@ export const createBoard = async (
     }
 
     await transaction.commit();
-    res.status(201).send({ meg: "게시글 작성을 완료했습니다." });
+
+    res.status(201).send(
+      new BasicResponseDto<any>(StatusCodes.CREATED, {
+        boardId: board.uuid,
+      })
+    );
   } catch (err) {
     await transaction.rollback();
 
@@ -140,34 +147,37 @@ export const createBoard = async (
   }
 };
 
-// export const mangeBoard = async (req, res, next) => {
-//   try {
-//     let page = req.query.page || 1;
-//     let limit = 10;
-//     let offset = 0 + (page - 1) * limit;
+export const mangeBoard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let page = Number(req.query.page) || 1;
+    let limit = Number(req.query.limit) || 10;
+    let offset = 0 + (page - 1) * limit;
 
-//     const boardList = await Board.findAndCountAll({
-//       raw: true,
-//       offset: offset,
-//       limit: limit,
-//       distinct: true,
-//       attributes: ["id", "title", "subTitle", "createdAt"],
-//     });
+    const boardList = await Board.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      distinct: true,
+      attributes: ["uuid", "title", "subTitle", "createdAt"],
+    });
 
-//     console.log(boardList);
-//     let boardObj = new PagenationObject(
-//       page,
-//       boardList.count,
-//       limit,
-//       boardList.rows,
-//       "board"
-//     );
-//     return res.status(200).send(boardObj);
-//   } catch (err) {
-//     console.error(err);
-//     next("게시글 리스트 호출 중 문제가 발생했습니다. 다시 시도해 주세요.");
-//   }
-// };
+    let boardObj = new PagenationGenric(
+      page,
+      boardList.count,
+      limit,
+      boardList.rows,
+      "board"
+    );
+
+    return res.status(200).send(boardObj);
+  } catch (err) {
+    console.error(err);
+    next("게시글 리스트 호출 중 문제가 발생했습니다. 다시 시도해 주세요.");
+  }
+};
 // export const boardList = async (req, res, next) => {
 //   try {
 //     let page = req.query.page || 1;
@@ -235,41 +245,47 @@ export const createBoard = async (
 //   }
 // };
 
-// export const boardDetail = async (req, res, next) => {
-//   try {
-//     const boardId = req.params.id;
-//     const board = await Board.findOne({
-//       raw: true,
-//       attributes: ["id", "title", "subTitle", "content"],
-//       where: {
-//         id: boardId,
-//       },
-//     });
-//     console.log(board);
-//     const photoList = await Photo.findAll({
-//       raw: true,
-//       attributes: ["filePath"],
-//       where: {
-//         board_pk: boardId,
-//       },
-//     });
-//     const hashTagList = await sequelize.query(
-//       "SELECT tags.title" +
-//         " FROM boardHashTag AS bht" +
-//         " JOIN hashtags AS tags" +
-//         " ON tags.id = bht.hash_tag_id" +
-//         " WHERE bht.board_id = :boardId",
-//       {
-//         replacements: { boardId: boardId },
-//         type: QueryTypes.SELECT,
-//       }
-//     );
-//     board.photoList = photoList;
-//     board.hashTagList = hash;
-//     TagList;
-//     res.status(200).send(board);
-//   } catch (err) {
-//     console.error(err);
-//     next("사진 불러오기에 실패했습니다. 다시 시도해 주세요.");
-//   }
-// };
+export const boardDetail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const boardId = req.params.id;
+    const board = await Board.findOne({
+      raw: true,
+      attributes: ["uuid", "title", "subTitle", "content"],
+      where: {
+        uuid: boardId,
+      },
+    });
+    if (!board) {
+      throw new Error("해당 게시글을 찾을 수 없습니다.");
+    }
+    console.log(JSON.stringify(board, null, 2));
+    const photoList = await Photo.findAll({
+      raw: true,
+      attributes: ["filePath"],
+      where: {
+        board_pk: boardId,
+      },
+    });
+    // const hashTagList = await sequelize.query(
+    //   "SELECT tags.title" +
+    //     " FROM boardHashTag AS bht" +
+    //     " JOIN hashtags AS tags" +
+    //     " ON tags.id = bht.hash_tag_id" +
+    //     " WHERE bht.board_id = :boardId",
+    //   {
+    //     replacements: { boardId: boardId },
+    //     type: QueryTypes.SELECT,
+    //   }
+    // );
+    // board.photoList = photoList;
+    // board.hashTagList = hashTagList;
+    res.status(200).send(board);
+  } catch (err) {
+    console.error(err);
+    next("사진 불러오기에 실패했습니다. 다시 시도해 주세요.");
+  }
+};
