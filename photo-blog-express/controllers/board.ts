@@ -4,7 +4,8 @@ import { QueryTypes } from "sequelize/types";
 import { v4 } from "uuid";
 import { BasicResponseDto } from "../dtos/basicResponseDto";
 import { PagenationGenric } from "../dtos/genric/pagenationGenric";
-import { IBoardCreateDto } from "../interfaces/IBoard";
+import { PhotoPagenationGenric } from "../dtos/genric/photoPagenationGenric";
+import { IBoardCreateDto, IBoardRowDto } from "../interfaces/IBoard";
 import { sequelize } from "../models";
 import Board from "../models/board";
 import HashTag from "../models/hashtag";
@@ -178,72 +179,115 @@ export const mangeBoard = async (
     next("게시글 리스트 호출 중 문제가 발생했습니다. 다시 시도해 주세요.");
   }
 };
-// export const boardList = async (req, res, next) => {
-//   try {
-//     let page = req.query.page || 1;
-//     let limit = 10;
-//     let offset = 0 + (page - 1) * limit;
-//     const boardList = await Board.findAndCountAll({
-//       raw: true,
-//       offset: offset,
-//       limit: limit,
-//       distinct: true,
-//       attributes: ["id", "title", "subTitle"],
-//       order: [["id", "DESC"]],
-//     });
+export const boardList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let page = Number(req.query.page) || 1;
+    let limit = Number(req.query.limit) || 10;
+    let offset = 0 + (page - 1) * limit;
+    const boardList = await Board.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      attributes: ["uuid", "title", "subTitle"],
+      include: [
+        {
+          model: HashTag,
+          attributes: ["title"],
+          through: {
+            attributes: [],
+          },
+        },
+        {
+          model: Photo,
+          attributes: ["filePath"],
+          limit: 1,
+        },
+      ],
+    });
+    const dto = new PhotoPagenationGenric(
+      page,
+      boardList.count,
+      limit,
+      boardList.rows
+    );
+    res
+      .status(200)
+      .send(
+        new BasicResponseDto<any>(
+          StatusCodes.OK,
+          new BasicResponseDto<PhotoPagenationGenric>(StatusCodes.OK, dto)
+        )
+      );
+  } catch (err) {
+    next(err);
+  }
+  //     let page = req.query.page || 1;
+  //     let limit = 10;
+  //     let offset = 0 + (page - 1) * limit;
+  //     const boardList = await Board.findAndCountAll({
+  //       raw: true,
+  //       offset: offset,
+  //       limit: limit,
+  //       distinct: true,
+  //       attributes: ["id", "title", "subTitle"],
+  //       order: [["id", "DESC"]],
+  //     });
 
-//     const boardIdList = boardList.rows.map((board) => board.id);
+  //     const boardIdList = boardList.rows.map((board) => board.id);
 
-//     const photoList = await Photo.findAll({
-//       raw: true,
-//       where: {
-//         board_pk: boardIdList,
-//       },
-//       order: [["id", "DESC"]],
-//       attributes: ["id", "filePath", "board_pk"],
-//     });
+  //     const photoList = await Photo.findAll({
+  //       raw: true,
+  //       where: {
+  //         board_pk: boardIdList,
+  //       },
+  //       order: [["id", "DESC"]],
+  //       attributes: ["id", "filePath", "board_pk"],
+  //     });
 
-//     let photoMap = new Map();
-//     photoList.forEach((photo) => {
-//       const data = photoMap.get(photo.board_pk) || [];
-//       photoMap.set(photo.board_pk, [...data, photo.filePath]);
-//     });
-//     console.log("map", photoMap);
-//     const hashTagList = await sequelize.query(
-//       "SELECT bht.board_id, tags.id, tags.title FROM boardHashTag AS bht JOIN hashtags AS tags ON tags.id = bht.hash_tag_id WHERE bht.board_id IN (:boardIdList)",
-//       {
-//         replacements: { boardIdList: boardIdList },
-//         type: QueryTypes.SELECT,
-//       }
-//     );
+  //     let photoMap = new Map();
+  //     photoList.forEach((photo) => {
+  //       const data = photoMap.get(photo.board_pk) || [];
+  //       photoMap.set(photo.board_pk, [...data, photo.filePath]);
+  //     });
+  //     console.log("map", photoMap);
+  //     const hashTagList = await sequelize.query(
+  //       "SELECT bht.board_id, tags.id, tags.title FROM boardHashTag AS bht JOIN hashtags AS tags ON tags.id = bht.hash_tag_id WHERE bht.board_id IN (:boardIdList)",
+  //       {
+  //         replacements: { boardIdList: boardIdList },
+  //         type: QueryTypes.SELECT,
+  //       }
+  //     );
 
-//     let hashMap = new Map();
-//     hashTagList.forEach((hashTag) => {
-//       const data = hashMap.get(hashTag.board_id) || [];
-//       hashMap.set(hashTag.board_id, [...data, hashTag.title]);
-//     });
-//     console.log("hashMap", hashMap);
+  //     let hashMap = new Map();
+  //     hashTagList.forEach((hashTag) => {
+  //       const data = hashMap.get(hashTag.board_id) || [];
+  //       hashMap.set(hashTag.board_id, [...data, hashTag.title]);
+  //     });
+  //     console.log("hashMap", hashMap);
 
-//     boardList.rows.forEach((board) => {
-//       let photoList = photoMap.get(board.id) || [];
-//       board.photoList = photoList;
-//       let hashTagList = hashMap.get(board.id) || [];
-//       board.hashTagList = hashTagList;
-//     });
-//     console.log(boardList);
-//     const pageObject = new PagenationObject(
-//       page,
-//       boardList.count,
-//       limit,
-//       boardList.rows,
-//       "index"
-//     );
-//     res.status(200).send(pageObject);
-//   } catch (err) {
-//     console.error(err);
-//     next("게시글 리스트 호출 중 문제가 발생했습니다. 다시 시도해 주세요.");
-//   }
-// };
+  //     boardList.rows.forEach((board) => {
+  //       let photoList = photoMap.get(board.id) || [];
+  //       board.photoList = photoList;
+  //       let hashTagList = hashMap.get(board.id) || [];
+  //       board.hashTagList = hashTagList;
+  //     });
+  //     console.log(boardList);
+  //     const pageObject = new PagenationObject(
+  //       page,
+  //       boardList.count,
+  //       limit,
+  //       boardList.rows,
+  //       "index"
+  //     );
+  //     res.status(200).send(pageObject);
+  //   } catch (err) {
+  //     console.error(err);
+  //     next("게시글 리스트 호출 중 문제가 발생했습니다. 다시 시도해 주세요.");
+  //   }
+};
 
 export const boardDetail = async (
   req: Request,

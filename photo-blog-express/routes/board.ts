@@ -6,11 +6,11 @@ import * as express from "express";
 // // mangeBoard,
 // // boardDetail,
 // "../controllers/board";
-import { boardDetail } from "../controllers/board";
+import { boardDetail, boardList } from "../controllers/board";
 const router = express.Router();
 
 // //사진 리스트
-// router.get("/", boardList);
+router.get("/", boardList);
 
 // //사진 디테일
 router.get("/:id", boardDetail);
