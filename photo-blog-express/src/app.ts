@@ -38,7 +38,7 @@ app.use(
 app.use(morgan("dev"));
 app.use(cors());
 sequelize
-  .sync({ force: true })
+  .sync({ force: false })
   .then(() => {
     console.log("연결 성공");
   })

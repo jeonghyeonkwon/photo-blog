@@ -4,7 +4,7 @@ export class PagenationGenric {
   currentPage: number;
   totalCount: number;
   limit: number;
-  userList: Array<any>;
+  list: Array<any>;
 
   constructor(
     currentPage: number,
@@ -17,7 +17,7 @@ export class PagenationGenric {
     this.totalCount = totalCount;
     this.limit = limit;
     if (type === "user") {
-      this.userList = array.map((user) => ({
+      this.list = array.map((user) => ({
         id: user.uuid,
         userId: user.userId,
         name: user.name,
@@ -27,14 +27,14 @@ export class PagenationGenric {
         createdAt: moment(user.createdAt).format("YYYY년 MM월 DD일"),
       }));
     } else if (type === "board") {
-      this.userList = array.map((board) => ({
+      this.list = array.map((board) => ({
         id: board.uuid,
         title: board.title,
         subTitle: board.subTitle,
         createdAt: moment(board.createdAt).format("YYYY년 MM월 DD일"),
       }));
     } else {
-      this.userList = array;
+      this.list = array;
     }
   }
 }

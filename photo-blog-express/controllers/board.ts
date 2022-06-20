@@ -253,37 +253,29 @@ export const boardDetail = async (
   try {
     const boardId = req.params.id;
     const board = await Board.findOne({
-      raw: true,
       attributes: ["uuid", "title", "subTitle", "content"],
       where: {
         uuid: boardId,
       },
+      include: [
+        {
+          model: Photo,
+          attributes: ["uuid", "filePath", "board_pk"],
+        },
+        {
+          model: HashTag,
+          attributes: ["title"],
+          through: {
+            attributes: [],
+          },
+        },
+      ],
     });
     if (!board) {
       throw new Error("해당 게시글을 찾을 수 없습니다.");
     }
-    console.log(JSON.stringify(board, null, 2));
-    const photoList = await Photo.findAll({
-      raw: true,
-      attributes: ["filePath"],
-      where: {
-        board_pk: boardId,
-      },
-    });
-    // const hashTagList = await sequelize.query(
-    //   "SELECT tags.title" +
-    //     " FROM boardHashTag AS bht" +
-    //     " JOIN hashtags AS tags" +
-    //     " ON tags.id = bht.hash_tag_id" +
-    //     " WHERE bht.board_id = :boardId",
-    //   {
-    //     replacements: { boardId: boardId },
-    //     type: QueryTypes.SELECT,
-    //   }
-    // );
-    // board.photoList = photoList;
-    // board.hashTagList = hashTagList;
-    res.status(200).send(board);
+
+    res.status(200).send(new BasicResponseDto<any>(StatusCodes.OK, board));
   } catch (err) {
     console.error(err);
     next("사진 불러오기에 실패했습니다. 다시 시도해 주세요.");
