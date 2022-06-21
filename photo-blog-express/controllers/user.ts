@@ -202,7 +202,7 @@ export const userLogin = async (
   try {
     const { userId, password }: IUserLoginDto = req.body;
     const user = await User.findOne({
-      attributes: ["id", "userId", "password", "name"],
+      attributes: ["uuid", "userId", "password", "name"],
       where: { userId },
     });
     if (!user) {
@@ -339,6 +339,28 @@ export const resignUser = async (
   }
 };
 
+export const userInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const decoded = req.decoded! as jwt.JwtPayload;
+    const uuid = decoded.uuid;
+    const user = await User.findOne({
+      where: { uuid },
+      attributes: ["uuid", "userId", "name", "tel", "email"],
+    });
+    if (!user) {
+      throw new Error("해당 유저는 없습니다");
+    }
+    return res
+      .status(200)
+      .send(new BasicResponseDto<any>(StatusCodes.OK, user));
+  } catch (err) {
+    next(err);
+  }
+};
 export const validateToken = async (
   req: Request,
   res: Response,
