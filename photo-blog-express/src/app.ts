@@ -6,14 +6,14 @@ import * as cors from "cors";
 import * as swaggerUi from "swagger-ui-express";
 import * as YAML from "yamljs";
 
-import userRouter from "../routes/user";
-import adminRouter from "../routes/admin";
-import boardRouter from "../routes/board";
-import { BasicResponseDto } from "../dtos/basicResponseDto";
-import { MessageGenric } from "../dtos/genric/messageGenric";
+import userRouter from "./routes/user";
+import adminRouter from "./routes/admin";
+import boardRouter from "./routes/board";
+import { BasicResponseDto } from "./dtos/basicResponseDto";
+import { MessageGenric } from "./dtos/genric/messageGenric";
 import { StatusCodes } from "http-status-codes";
 
-const { sequelize } = require("../models");
+const { sequelize } = require("./models");
 
 dotenv.config();
 const app = express();
@@ -48,8 +48,13 @@ sequelize
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const swaggerSpec = YAML.load(path.join(__dirname, "/swagger/swagger.yaml"));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const env =
+  (process.env.NODE_ENV as "production" | "test" | "development") ||
+  "development";
+if (env === "development") {
+  const swaggerSpec = YAML.load(path.join(__dirname, "/swagger/swagger.yaml"));
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);

@@ -6,9 +6,10 @@
   "scripts": {
     "prebuild": "npm run api-docs",
     "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile src/swagger/swagger.yaml --type yaml",
-    "start:dev": "ts-node src/app.ts",
+    "start:dev": "nodemon --exec ts-node ./src/app.ts",
     "prestart": "npm run api-docs",
-    "start": "nodemon --exec ts-node src/app.ts"
+    "build": "npx tsc",
+    "start": "node ./build/app.js"
   },
   "keywords": [],
   "author": "",
