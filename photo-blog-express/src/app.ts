@@ -12,6 +12,7 @@ import boardRouter from "./routes/board";
 import { BasicResponseDto } from "./dtos/basicResponseDto";
 import { MessageGenric } from "./dtos/genric/messageGenric";
 import { StatusCodes } from "http-status-codes";
+import e = require("express");
 
 const { sequelize } = require("./models");
 
@@ -34,8 +35,12 @@ app.use(
     )
   )
 );
+if (process.env.NODE_ENV === "production") {
+  app.use(morgan("combined"));
+} else {
+  app.use(morgan("dev"));
+}
 
-app.use(morgan("dev"));
 app.use(cors());
 sequelize
   .sync({ force: false })
